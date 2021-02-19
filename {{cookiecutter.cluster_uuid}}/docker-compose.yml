@@ -1,0 +1,333 @@
+services:
+  api:
+    build:
+      args:
+        APP_DIR: services
+        APP_NAME: api
+        BUILD_TAG: latest
+        GEM_HOME: /cache/gem
+        NPM_CONFIG_PREFIX: /cache/npm
+        PIPCACHE: /cache/pip
+        PORT: '8004'
+        RUBY_IMAGE: ruby:2.5-slim-buster
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.rails
+    command: /scripts/ruby/api_start 8004
+    container_name: api
+    depends_on:
+    - database
+    environment:
+      NPM_CONFIG_PREFIX: /cache/npm
+      npm_config_cache_min: Infinity
+    image: nmarvie/api:latest
+    restart: always
+    tty: true
+    volumes:
+    - $((INSTALL))/data/flags:/arvados/flags:rw
+    - $((INSTALL))/cache/ruby:/cache/gem:rw
+    - $((INSTALL))/cache/npm:/cache/npm:rw
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-api-database.yml:/etc/arvados/database.yml:rw
+    - $((INSTALL))/scripts:/scripts:rw
+    - $((INSTALL))/arvados:/usr/src/arvados:rw
+  arvados-client:
+    build:
+      args:
+        APP_DIR: cmd
+        APP_NAME: arvados-client
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    image: nmarvie/client:latest
+  arvados-server:
+    build:
+      args:
+        APP_DIR: cmd
+        APP_NAME: arvados-server
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    image: nmarvie/server:latest
+  cache-builder:
+    build:
+      args:
+        BUILD_TAG: latest
+        GEM_HOME: /cache/gem
+        NPM_CONFIG_PREFIX: /cache/npm
+        PIPCACHE: /cache/pip
+        RUBY_IMAGE: ruby:2.5-slim-buster
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.rails
+    command: /scripts/ruby/build_gems_cache
+    container_name: cache-builder
+    environment:
+      NPM_CONFIG_PREFIX: /cache/npm
+      npm_config_cache_min: Infinity
+    image: nmarvie/cache-builder:latest
+    volumes:
+    - $((INSTALL))/cache/ruby:/cache/gem:rw
+    - $((INSTALL))/cache/npm:/cache/npm:rw
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-api-database.yml:/etc/arvados/database.yml:rw
+    - $((INSTALL))/configs/build/dpkg-nodoc:/etc/dpkg/dpkg.cfg.d/01_nodoc:rw
+    - $((INSTALL))/configs/build/gemrc:/root/.gemrc:rw
+    - $((INSTALL))/scripts:/scripts:rw
+    - $((INSTALL))/arvados:/usr/src/arvados:rw
+  compute:
+    build:
+      args:
+        BUILD_TAG: latest
+        COMPUTE_IMAGE: debian:buster-slim
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.compute
+    image: nmarvie/compute:latest
+  controller:
+    build:
+      args:
+        APP_DIR: cmd
+        APP_NAME: arvados-server
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    command: controller
+    container_name: controller
+    depends_on:
+    - api
+    - database
+    image: nmarvie/controller:latest
+    restart: always
+    volumes:
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+  crunch-dispatch-local:
+    build:
+      args:
+        APP_DIR: services
+        APP_NAME: crunch-dispatch-local
+        BUILD_TAG: latest
+        COMPUTE_IMAGE: debian:buster-slim
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp.crunch-dispatch-local
+    command: /scripts/arvados/crunch-dispatch-local
+    container_name: dispatcher
+    environment:
+      ARVADOS_API_HOST: test1.arv.local:8000
+      ARVADOS_API_HOST_INSECURE: 1
+      ARVADOS_API_TOKEN: systemroottokenmushaveatleast32characters
+    image: nmarvie/crunch-dispatch-local:latest
+    privileged: true
+    tty: true
+    volumes:
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+    - $((INSTALL))/scripts:/scripts:rw
+    - /tmp/docker-dispatcher:/var/lib/docker:rw
+  database:
+    command: postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c
+      ssl_key_file=/var/lib/postgresql/server.key -c log_statement=all
+    container_name: database
+    environment:
+      POSTGRES_PASSWORD: postgres
+    image: postgres:11-alpine
+    ports:
+    - published: 5432
+      target: 5432
+    restart: always
+    volumes:
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/postgresql:/docker-entrypoint-initdb.d:rw
+    - $((INSTALL))/data/postgres:/var/lib/postgresql/data:rw
+    - $((INSTALL))/ssl/database.test1.arv.local.crt:/var/lib/postgresql/server.crt:ro
+    - $((INSTALL))/ssl/database.test1.arv.local.key:/var/lib/postgresql/server.key:ro
+  git-httpd:
+    build:
+      args:
+        APP_DIR: services
+        APP_NAME: arv-git-httpd
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    image: nmarvie/git-httpd:latest
+  health:
+    build:
+      args:
+        APP_DIR: services
+        APP_NAME: health
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    image: nmarvie/health:latest
+  keep-balance:
+    build:
+      args:
+        APP_DIR: services
+        APP_NAME: keep-balance
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    image: nmarvie/keep-balance:latest
+  keep-web:
+    build:
+      args:
+        APP_DIR: services
+        APP_NAME: keep-web
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    image: nmarvie/keep-web:latest
+  keep0:
+    container_name: keep0
+    image: nmarvie/keepstore:latest
+    volumes:
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+    - $((INSTALL))/data/keep0:/var/lib/arvados/keep0:rw
+  keep1:
+    container_name: keep1
+    image: nmarvie/keepstore:latest
+    volumes:
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+    - $((INSTALL))/data/keep1:/var/lib/arvados/keep1:rw
+  keepproxy:
+    build:
+      args:
+        APP_DIR: services
+        APP_NAME: keepproxy
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    container_name: keep
+    depends_on:
+    - api
+    - controller
+    - keep0
+    - keep1
+    image: nmarvie/keepproxy:latest
+    volumes:
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+  keepstore:
+    build:
+      args:
+        APP_DIR: services
+        APP_NAME: keepstore
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    image: nmarvie/keepstore:latest
+  keepweb:
+    container_name: keepweb
+    depends_on:
+    - api
+    - controller
+    image: nmarvie/keep-web:latest
+    volumes:
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+  nginx:
+    container_name: nginx
+    depends_on:
+    - api
+    - controller
+    - keepproxy
+    - workbench
+    image: nginx:stable-alpine
+    networks:
+      default:
+        aliases:
+        - nginx-api
+        - nginx-collections
+        - nginx-download
+        - nginx-keep
+        - nginx-webshell
+        - nginx-workbench
+        - nginx-workbench2
+        - nginx-ws
+        - test1.arv.local
+    ports:
+    - published: 8000
+      target: 8000
+    - published: 8002
+      target: 8002
+    - published: 8443
+      target: 8443
+    - published: 9002
+      target: 9002
+    - published: 25101
+      target: 25101
+    restart: always
+    volumes:
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/nginx:/etc/nginx/conf.d:rw
+    - $((INSTALL))/ssl:/etc/nginx/ssl:ro
+  shell:
+    build:
+      args:
+        BUILD_TAG: latest
+        COMPUTE_IMAGE: debian:buster-slim
+        GEM_HOME: /cache/gem
+        NPM_CONFIG_PREFIX: /cache/npm
+        PIPCACHE: /cache/pip
+        RUBY_IMAGE: ruby:2.5-slim-buster
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.shell
+    command: /scripts/arvados/shell
+    container_name: shell
+    environment:
+      NPM_CONFIG_PREFIX: /cache/npm
+      npm_config_cache_min: Infinity
+    image: nmarvie/shell:latest
+    privileged: true
+    tty: true
+    volumes:
+    - $((INSTALL))/cache/ruby:/cache/gem:rw
+    - $((INSTALL))/cache/npm:/cache/npm:rw
+    - $((INSTALL))/scripts:/scripts:rw
+    - $((INSTALL))/ssl/test1.arv.local-CA.crt:/usr/local/share/ca-certificates/test1.arv.local-CA.crt:ro
+    - $((INSTALL))/arvados:/usr/src/arvados:rw
+    - /tmp/docker-shell:/var/lib/docker:rw
+  websocket:
+    build:
+      args:
+        APP_DIR: cmd
+        APP_NAME: arvados-server
+        BUILD_TAG: latest
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
+    command: ws
+    container_name: ws
+    depends_on:
+    - api
+    - controller
+    image: nmarvie/websocket:latest
+    restart: always
+    volumes:
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+  workbench:
+    build:
+      args:
+        APP_DIR: apps
+        APP_NAME: workbench
+        BUILD_TAG: latest
+        GEM_HOME: /cache/gem
+        NPM_CONFIG_PREFIX: /cache/npm
+        PIPCACHE: /cache/pip
+        PORT: '9002'
+        RUBY_IMAGE: ruby:2.5-slim-buster
+      context: .
+      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.rails
+    command: /scripts/ruby/workbench_start 8002
+    container_name: workbench
+    depends_on:
+    - api
+    - controller
+    environment:
+      npm_config_cache: /cache/npm
+      npm_config_cache_min: Infinity
+    image: nmarvie/workbench:latest
+    restart: always
+    tty: true
+    volumes:
+    - $((INSTALL))/data/flags:/arvados/flags:rw
+    - $((INSTALL))/cache/ruby:/cache/gem:rw
+    - $((INSTALL))/cache/npm:/cache/npm:rw
+    - $((INSTALL))/cache/pip:/cache/pip:rw
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-workbench-application.yml:/etc/arvados/application.yml:rw
+    - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+    - $((INSTALL))/scripts:/scripts:rw
+    - $((INSTALL))/arvados:/usr/src/arvados:rw
+version: '3.8'
+

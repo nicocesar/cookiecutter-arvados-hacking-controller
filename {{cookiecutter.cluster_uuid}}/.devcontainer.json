@@ -1,0 +1,13 @@
+{
+    "name": "Arvados Cluster {{cookiecutter.cluster_uuid}}",
+    "dockerComposeFile": [
+		"docker-compose.yml",
+		"docker-compose.debug-controller.yml"
+		],
+	"service": "controller",
+	"extensions": [
+		"golang.go"
+	],
+    "workspaceFolder": "/usr/src/arvados/git.arvados.org/arvados.git",
+    "shutdownAction": "stopCompose"
+}

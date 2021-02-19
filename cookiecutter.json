@@ -1,0 +1,10 @@
+{
+	"cluster_uuid":"z1111",
+	"arvados_repo":"git@git.arvados.org:arvados.git",
+	"arvados_branch":"master",
+	"_extensions":["jinja2.ext.debug"],
+	"service_configs_dir":"config",
+	"default_configs_dir":"configs"
+
+}
+

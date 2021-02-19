@@ -1,0 +1,18 @@
+Welcome to your fresh Arvados installation of {{cookiecutter.cluster_uuid}}!
+
+This is meant to be used with vscode and docker-compose.
+
+Please install the extension Remote Container in VSCODE:: 
+
+  ext install ms-vscode-remote.remote-containers
+
+Then execute vscode in this directory
+
+  code
+
+you should be asked "Do you want to open workspace in a Container?"
+
+After that, the first time Docker-compose will take some time to build all the images 
+for arvados and then the new environment should be ready to go
+
+
