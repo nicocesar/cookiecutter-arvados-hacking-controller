@@ -61,6 +61,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-apt \
                     zlib1g-dev \
  && mkdir -p /etc/arvados \
  # Set up an appropriate config.yml (all these, taken from arvbox)
- && arvados-server config-dump -config <(cat /etc/arvados/config.yml 2>/dev/null || echo  "Clusters: {zzzzz: {}}") > /tmp/x \
+ # && arvados-server config-dump -config <(cat /etc/arvados/config.yml 2>/dev/null || echo  "Clusters: {zzzzz: {}}") > /tmp/x \
+ && (cat /etc/arvados/config.yml 2>/dev/null || echo  "Clusters: {zzzzz: {}}") | arvados-server config-dump -config - > /tmp/x \
  && mv /tmp/x /etc/arvados/config.yml \
  && perl -p -i -e 'BEGIN{undef $/;} s/WebDAV(.*?):\n( *)ExternalURL: ""/WebDAV$1:\n$2ExternalURL: "example.com"/g' /etc/arvados/config.yml
+# copy the arvados code
+COPY ./arvados ${LOCAL_ARVADOS_SRC}
