@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   api:
     build:
@@ -15,8 +17,7 @@ services:
     command: /scripts/ruby/api_start 8004
     container_name: api
     depends_on:
-      database:
-        condition: service_started
+      - database
     environment:
       NPM_CONFIG_PREFIX: /cache/npm
       npm_config_cache_min: Infinity
@@ -93,10 +94,8 @@ services:
     command: controller
     container_name: controller
     depends_on:
-      api:
-        condition: service_started
-      database:
-        condition: service_started
+      - api
+      - database
     image: nmarvie/controller:latest
     restart: always
     volumes:
@@ -196,14 +195,10 @@ services:
       dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
     container_name: keep
     depends_on:
-      api:
-        condition: service_started
-      controller:
-        condition: service_started
-      keep0:
-        condition: service_started
-      keep1:
-        condition: service_started
+      - api
+      - controller
+      - keep0
+      - keep1
     image: nmarvie/keepproxy:latest
     volumes:
     - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
@@ -219,24 +214,18 @@ services:
   keepweb:
     container_name: keepweb
     depends_on:
-      api:
-        condition: service_started
-      controller:
-        condition: service_started
+      - api
+      - controller
     image: nmarvie/keep-web:latest
     volumes:
     - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
   nginx:
     container_name: nginx
     depends_on:
-      api:
-        condition: service_started
-      controller:
-        condition: service_started
-      keepproxy:
-        condition: service_started
-      workbench:
-        condition: service_started
+      - api
+      - controller
+      - keepproxy
+      - workbench
     image: nginx:stable-alpine
     networks:
       default:
@@ -302,10 +291,8 @@ services:
     command: ws
     container_name: ws
     depends_on:
-      api:
-        condition: service_started
-      controller:
-        condition: service_started
+      - api
+      - controller
     image: nmarvie/websocket:latest
     restart: always
     volumes:
@@ -326,10 +313,8 @@ services:
     command: /scripts/ruby/workbench_start 8002
     container_name: workbench
     depends_on:
-      api:
-        condition: service_started
-      controller:
-        condition: service_started
+      - api
+      - controller
     environment:
       npm_config_cache: /cache/npm
       npm_config_cache_min: Infinity
@@ -344,7 +329,6 @@ services:
     - $((INSTALL))/{{cookiecutter.service_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
     - $((INSTALL))/scripts:/scripts:rw
     - $((INSTALL))/arvados:/usr/src/arvados:rw
-version: '3.8'
 volumes:
   {{cookiecutter.cluster_uuid}}_cache_gem: {}
   {{cookiecutter.cluster_uuid}}_cache_npm: {}
