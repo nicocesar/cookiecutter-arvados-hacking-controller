@@ -11,3 +11,5 @@ if not re.match(CLUSTER_UUID_REGEX, cluster_uuid):
 
     # exits with status 1 to indicate failure
     sys.exit(1)
+
+

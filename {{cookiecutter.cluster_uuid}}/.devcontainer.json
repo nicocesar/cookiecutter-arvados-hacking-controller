@@ -9,5 +9,6 @@
 		"golang.go"
 	],
     "workspaceFolder": "/usr/src/arvados/git.arvados.org/arvados.git",
-    "shutdownAction": "stopCompose"
+    "shutdownAction": "stopCompose",
+	
 }
