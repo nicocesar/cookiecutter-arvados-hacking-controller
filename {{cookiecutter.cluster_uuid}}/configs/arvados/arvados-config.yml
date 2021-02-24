@@ -13,7 +13,7 @@ Clusters:
         Enable: true
         Users:
           alice:
-            Email: alice@{{cookiecutter.cluster_uuid}}.arv.local
+            Email: alice@{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}
             Password: alice
       PAM:
         # (Experimental) Use PAM to authenticate users.
@@ -38,14 +38,14 @@ Clusters:
     Services:
       ### EXTERNALURLs are the URL accessible from the host
       Controller:
-        ExternalURL: 'https://{{cookiecutter.cluster_uuid}}.arv.local:8000'
+        ExternalURL: 'https://{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:8000'
         InternalURLs:
           'http://controller:8003': {}
       # Keepbalance:
       #   InternalURLs:
       #     'http://keepbalance:9005': {}
       Keepproxy:
-        ExternalURL: 'https://keep.{{cookiecutter.cluster_uuid}}.arv.local:25101'
+        ExternalURL: 'https://keep.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:25101'
         InternalURLs:
           'http://keep:25100': {}
       Keepstore:
@@ -57,25 +57,25 @@ Clusters:
           # WE need to pass requests through nginx, or bad things will happen
           'http://nginx-api:8084': {}
       WebDAV:
-        ExternalURL: 'https://collections.{{cookiecutter.cluster_uuid}}.arv.local:9002'
+        ExternalURL: 'https://collections.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:9002'
         InternalURLs:
           'http://keepweb:9003/': {}
       WebDAVDownload:
-        ExternalURL: 'https://download.{{cookiecutter.cluster_uuid}}.arv.local:9002'
+        ExternalURL: 'https://download.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:9002'
         InternalURLs:
           'http://keepweb:9003/': {}
       WebShell:
-        ExternalURL: 'https://webshell.{{cookiecutter.cluster_uuid}}.arv.local:4202'
+        ExternalURL: 'https://webshell.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:4202'
         InternalURLs:
           'http://webshell:4200/': {}
       Websocket:
-        ExternalURL: 'wss:///ws.{{cookiecutter.cluster_uuid}}.arv.local:8002/websocket'
+        ExternalURL: 'wss:///ws.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:8002/websocket'
         InternalURLs:
           'http://ws:8005': {}
       Workbench1:
-        ExternalURL: 'https://workbench.{{cookiecutter.cluster_uuid}}.arv.local:8443'
+        ExternalURL: 'https://workbench.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:8443'
       Workbench2:
-        ExternalURL: 'https://workbench2.{{cookiecutter.cluster_uuid}}.arv.local:3001'
+        ExternalURL: 'https://workbench2.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:3001'
     SystemRootToken: systemroottokenmushaveatleast32characters
     TLS:
       Certificate: ''
@@ -89,7 +89,7 @@ Clusters:
       NewUsersAreActive: true
     Workbench:
       SecretKeyBase: workbenchsecretkeybase
-      SiteName: VWXYZ
+      SiteName: {{cookiecutter.cluster_uuid}}
     Volumes:
       {{cookiecutter.cluster_uuid}}-nyw5e-000000000000000:
         AccessViaHosts:

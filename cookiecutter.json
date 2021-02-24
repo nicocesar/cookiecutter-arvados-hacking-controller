@@ -1,9 +1,11 @@
 {
 	"cluster_uuid":"z1111",
+	"domain":"arv.local",
 	"arvados_repo":"git@git.arvados.org:arvados.git",
 	"arvados_branch":"17402-vscode-integration",
 	"_extensions":["jinja2.ext.debug"],
-	"default_configs_dir":"configs"
+	"default_configs_dir":"configs",
+	"update_etc_hosts": ["yes", "no"]
 
 }
 
