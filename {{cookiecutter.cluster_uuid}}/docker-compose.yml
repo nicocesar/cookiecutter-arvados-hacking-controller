@@ -39,8 +39,8 @@ services:
     tty: true
     volumes:
     - /arvados/flags:/arvados/flags:rw
-    - {{cookiecutter.cluster_uuid}}_cache_gem:/cache/gem:rw
-    - {{cookiecutter.cluster_uuid}}_cache_npm:/cache/npm:rw
+    - cache_gem:/cache/gem:rw
+    - cache_npm:/cache/npm:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-api-database.yml:/etc/arvados/database.yml:rw
     - $((INSTALL))/scripts:/scripts:rw
@@ -62,8 +62,8 @@ services:
       npm_config_cache_min: Infinity
     image: nmarvie/cache-builder:latest
     volumes:
-    - {{cookiecutter.cluster_uuid}}_cache_gem:/cache/gem:rw
-    - {{cookiecutter.cluster_uuid}}_cache_npm:/cache/npm:rw
+    - cache_gem:/cache/gem:rw
+    - cache_npm:/cache/npm:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-api-database.yml:/etc/arvados/database.yml:rw
     - $((INSTALL))/configs/build/dpkg-nodoc:/etc/dpkg/dpkg.cfg.d/01_nodoc:rw
@@ -140,7 +140,7 @@ services:
     restart: always
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/postgresql:/docker-entrypoint-initdb.d:rw
-    - {{cookiecutter.cluster_uuid}}_db_data:/var/lib/postgresql/data:rw
+    - db_data:/var/lib/postgresql/data:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/ssl/database.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}.crt:/var/lib/postgresql/server.crt:ro
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/ssl/database.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}.key:/var/lib/postgresql/server.key:ro
   keep-web:
@@ -165,13 +165,13 @@ services:
     image: nmarvie/keepstore:latest
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
-    - {{cookiecutter.cluster_uuid}}_keep0_data:/var/lib/arvados/keep0:rw
+    - keep0_data:/var/lib/arvados/keep0:rw
   keep1:
     container_name: {{cookiecutter.cluster_uuid}}_keep1
     image: nmarvie/keepstore:latest
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
-    - {{cookiecutter.cluster_uuid}}_keep0_data:/var/lib/arvados/keep0:rw
+    - keep0_data:/var/lib/arvados/keep0:rw
   keepproxy:
     build:
       args:
@@ -249,8 +249,8 @@ services:
     privileged: true
     tty: true
     volumes:
-    - {{cookiecutter.cluster_uuid}}_cache_gem:/cache/gem:rw
-    - {{cookiecutter.cluster_uuid}}_cache_npm:/cache/npm:rw
+    - cache_gem:/cache/gem:rw
+    - cache_npm:/cache/npm:rw
     - $((INSTALL))/scripts:/scripts:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/ssl/{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}-CA.crt:/usr/local/share/ca-certificates/{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}-CA.crt:ro
     - $((INSTALL))/arvados:/usr/src/arvados:rw
@@ -301,18 +301,28 @@ services:
     tty: true
     volumes:
     - /arvados/flags:/arvados/flags:rw
-    - {{cookiecutter.cluster_uuid}}_cache_gem:/cache/gem:rw
-    - {{cookiecutter.cluster_uuid}}_cache_npm:/cache/npm:rw
+    - cache_gem:/cache/gem:rw
+    - cache_npm:/cache/npm:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-workbench-application.yml:/etc/arvados/application.yml:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
     - $((INSTALL))/scripts:/scripts:rw
     - $((INSTALL))/arvados:/usr/src/arvados:rw
 volumes:
-  {{cookiecutter.cluster_uuid}}_cache_gem: {}
-  {{cookiecutter.cluster_uuid}}_cache_npm: {}
-  {{cookiecutter.cluster_uuid}}_db_data: {}
-  {{cookiecutter.cluster_uuid}}_keep0_data: {}
-  {{cookiecutter.cluster_uuid}}_keep1_data: {}
-  {{cookiecutter.cluster_uuid}}_nginx_config: {}
-  {{cookiecutter.cluster_uuid}}_var_log: {}
-  {{cookiecutter.cluster_uuid}}_cache_go: {}
+  cache_gem:
+    driver: local
+    name: cache_gem ## re make a common name here so all clusters can share gem installs. (we'll see if this makes sense)
+  cache_npm:
+    driver: local
+    name: cache_npm
+  cache_go:
+    driver: local
+    name: cache_go
+  db_data:
+    driver: local
+    name: {{cookiecutter.cluster_uuid}}_db_data
+  keep0_data:
+    driver: local
+    name: {{cookiecutter.cluster_uuid}}_keep0_data
+  keep1_data:
+    driver: local
+    name: {{cookiecutter.cluster_uuid}}_keep1_data
