@@ -86,7 +86,7 @@ COPY --from=docker:latest /usr/local/bin/runc /usr/local/bin/runc
 COPY --from=docker:latest /usr/local/bin/containerd /usr/local/bin/containerd
 COPY --from=docker:latest /usr/local/bin/containerd-shim /usr/local/bin/containerd-shim
 COPY --from=docker:latest /usr/local/bin/containerd-shim-runc-v2 /usr/local/bin/containerd-shim-runc-v2
-COPY --from=nmarvie/server /app/arvados-server /usr/bin/crunch-run
+COPY --from=builder /go/bin/$APP_NAME /usr/bin/crunch-run
 COPY --from=builder /go/bin/$APP_NAME /usr/local/bin/crunch-dispatch-local
 
 COPY configs/build/crunch-run.sh /usr/local/bin/crunch-run.sh

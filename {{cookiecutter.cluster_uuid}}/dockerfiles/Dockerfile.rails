@@ -29,11 +29,6 @@ ENV NPM_CONFIG_PREFIX ${NPM_CONFIG_PREFIX}
 ENV npm_config_cache_min ${NPM_CACHE_MIN}
 # ENV R_LIBS /var/lib/Rlibs
 
-# Avoid unnecessary files when installing packages
-COPY configs/build/dpkg-nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
-COPY configs/build/apt-no-recommends /etc/apt/apt.conf.d/99synaptic
-COPY configs/build/gemrc /root/.gemrc
-
 # We use this to get the config :|
 COPY --from=nmarvie/server /app/arvados-server /usr/local/bin
 
@@ -61,7 +56,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-apt \
 
 # copy the arvados code
 COPY ./arvados/${APP_SUBDIR} ${LOCAL_ARVADOS_SRC}/${APP_SUBDIR}
-COPY configs/build/LAST_BUILD_INFO /BUILD_INFO
 
 WORKDIR ${LOCAL_ARVADOS_SRC}/${APP_SUBDIR}
 

@@ -3,9 +3,11 @@
 
 set -euo pipefail
 
-PORT=$1
+## if not specified will do 8004
+PORT=${1:-8004}
 
 export GEM_HOME=/cache/gem
+export BUNDLE_PATH=/cache/gem
 export NPM_CONFIG_PREFIX=/cache/npm
 
 echo "Run bundle install if required"
@@ -21,21 +23,8 @@ for t in {1..20}; do
   sleep 1
 done
 
-echo "Try to create the database if /arvados/flags/api_database_setup does not exist"
-if ! test -f /arvados/flags/api_database_setup ; then
-  # bundle exec rails db:setup
-  PGPASSWORD="arvados_{{cookiecutter.cluster_uuid}}" psql --host="database" \
-                                        --username="arvados_{{cookiecutter.cluster_uuid}}" \
-                                        --dbname="template1" \
-                                        --command="CREATE DATABASE arvados_{{cookiecutter.cluster_uuid}} ENCODING = 'utf8'"
-  PGPASSWORD="arvados_{{cookiecutter.cluster_uuid}}" psql --host="database" \
-                                        --username="arvados_{{cookiecutter.cluster_uuid}}" \
-                                        --dbname="arvados_{{cookiecutter.cluster_uuid}}" \
-                                        --file=/usr/src/arvados/services/api/db/structure.sql
-  echo "Populating the database with initial defaults"
-  bundle exec rails db:seed || exit 1
-  touch /arvados/flags/api_database_setup
-fi
+echo "Try to create the database if it does not exist"
+bundle exec rails db:version || bundle exec rails db:setup
 
 echo "Run migrations to update/upgrade the database structure"
 bundle exec rails db:migrate || exit 1

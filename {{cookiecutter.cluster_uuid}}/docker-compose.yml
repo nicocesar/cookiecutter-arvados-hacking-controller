@@ -12,7 +12,9 @@ services:
       dockerfile: $((INSTALL))/dockerfiles/Dockerfile.goapp
       target: builder
     image: gocache:cache
-    command: /bin/true  
+    command: /bin/true
+    volumes:
+        - cache_go:/go/pkg:rw
   api:
     build:
       args:
@@ -38,36 +40,10 @@ services:
     restart: always
     tty: true
     volumes:
-    - /arvados/flags:/arvados/flags:rw
     - cache_gem:/cache/gem:rw
     - cache_npm:/cache/npm:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-api-database.yml:/etc/arvados/database.yml:rw
-    - $((INSTALL))/scripts:/scripts:rw
-    - $((INSTALL))/arvados:/usr/src/arvados:rw
-  cache-builder:
-    build:
-      args:
-        BUILD_TAG: latest
-        GEM_HOME: /cache/gem
-        NPM_CONFIG_PREFIX: /cache/npm
-        PIPCACHE: /cache/pip
-        RUBY_IMAGE: ruby:2.7-slim-buster
-      context: .
-      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.cache
-    command: /scripts/ruby/build_gems_cache
-    container_name: {{cookiecutter.cluster_uuid}}_cache-builder
-    environment:
-      NPM_CONFIG_PREFIX: /cache/npm
-      npm_config_cache_min: Infinity
-    image: nmarvie/cache-builder:latest
-    volumes:
-    - cache_gem:/cache/gem:rw
-    - cache_npm:/cache/npm:rw
-    - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
-    - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-api-database.yml:/etc/arvados/database.yml:rw
-    - $((INSTALL))/configs/build/dpkg-nodoc:/etc/dpkg/dpkg.cfg.d/01_nodoc:rw
-    - $((INSTALL))/configs/build/gemrc:/root/.gemrc:rw
     - $((INSTALL))/scripts:/scripts:rw
     - $((INSTALL))/arvados:/usr/src/arvados:rw
   compute:
@@ -101,6 +77,7 @@ services:
     restart: always
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+    - cache_go:/go/pkg:rw
   crunch-dispatch-local:
     build:
       args:
@@ -126,7 +103,8 @@ services:
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
     - $((INSTALL))/scripts:/scripts:rw
-    - /tmp/docker-dispatcher:/var/lib/docker:rw
+    - /tmp/docker-dispatcher:/var/lib/docker:rw ## ????
+    - cache_go:/go/pkg:rw
   database:
     command: postgres -c ssl=off -c log_statement=all
     container_name: {{cookiecutter.cluster_uuid}}_database
@@ -193,6 +171,7 @@ services:
     image: nmarvie/keepproxy:latest
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+    - cache_go:/go/pkg:rw
   nginx:
     container_name: {{cookiecutter.cluster_uuid}}_nginx
     hostname: nginx
@@ -275,6 +254,7 @@ services:
     restart: always
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
+    - cache_go:/go/pkg:rw
   workbench:
     build:
       args:
@@ -300,7 +280,6 @@ services:
     restart: always
     tty: true
     volumes:
-    - /arvados/flags:/arvados/flags:rw
     - cache_gem:/cache/gem:rw
     - cache_npm:/cache/npm:rw
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-workbench-application.yml:/etc/arvados/application.yml:rw
