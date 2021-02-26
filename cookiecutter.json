@@ -5,7 +5,8 @@
 	"arvados_branch":"17402-vscode-integration",
 	"_extensions":["jinja2.ext.debug"],
 	"default_configs_dir":"configs",
-	"update_etc_hosts": ["yes", "no"]
-
+	"update_etc_hosts": ["yes", "no"],
+	"filename_ca_cert": "arvados-ca.crt",
+	"filename_ca_key": "arvados-ca.key"
 }
 

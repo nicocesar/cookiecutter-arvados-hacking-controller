@@ -5,9 +5,8 @@ import random
 TARGET = os.getcwd()
 
 ## important files
-
-CA_KEY = '{{cookiecutter.default_configs_dir}}/ssl/{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}-CA.key'
-CA_CRT = '{{cookiecutter.default_configs_dir}}/ssl/{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}-CA.crt'
+CA_CRT = '../{{cookiecutter.filename_ca_cert}}'
+CA_KEY = '../{{cookiecutter.filename_ca_key}}'
 
 DOMAIN_KEY = '{{cookiecutter.default_configs_dir}}/ssl/%s.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}.key'
 DOMAIN_CERT = '{{cookiecutter.default_configs_dir}}/ssl/%s.{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}.crt'
@@ -35,16 +34,20 @@ subprocess.check_call('git clone {{cookiecutter.arvados_repo}} -b {{cookiecutter
 ## TODO: generate certificates + CA ?
 ### CA:
 
-print("[ 1   ] Trying to generate certs...")
-print("[ 1.1 ] Generating CA")
-subprocess.check_call(['openssl', 'req', '-new', '-nodes', '-sha256', '-x509',
- '-subj', '/C=CC/ST=Arvie grep State/O=__ARVIE__/OU=arvie/CN=snakeoil-ca-{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}',
- '-extensions', 'x509_ext',
- '-config', '{{cookiecutter.default_configs_dir}}/ssl/openssl-ca.cnf',
- '-out', CA_CRT,
- '-keyout', CA_KEY,
- '-days', '3650'],
-stderr=subprocess.STDOUT)
+print(" [ 1   ] Trying to generate certs...")
+
+if os.path.isfile(CA_CRT) and os.path.isfile(CA_KEY):
+  print(" [ 1.1 ] %s and %s are there. Skipping" %(CA_CRT, CA_KEY))
+else:
+  print(" [ 1.1 ] Generating CA")
+  subprocess.check_call(['openssl', 'req', '-new', '-nodes', '-sha256', '-x509',
+  '-subj', '/C=US/ST=Arvados State/O=__ARVADOS__/OU=Arvados/CN=snakeoil-ca',
+  '-extensions', 'x509_ext',
+  '-config', '{{cookiecutter.default_configs_dir}}/ssl/openssl-ca.cnf',
+  '-out', CA_CRT,
+  '-keyout', CA_KEY,
+  '-days', '3650'],
+  stderr=subprocess.STDOUT)
 
 ## format [Name, CN, update_etc_host]
 ## controller database keep collections download workbench workbench2 ws; 
@@ -63,9 +66,9 @@ certificates = [
 ## csr
 
 for name, cn, _ in certificates:
-  print("[ 1.2 ] Generating cert for %s" % name)
+  print(" [ 1.2 ] Generating cert for %s" % name)
   subprocess.check_call(['openssl', 'req', '-new', '-nodes', '-sha256',
-    '-subj', '/C=CC/ST=Arvie State/O=__ARVIE__/OU=arvie/CN=%s' % cn, 
+    '-subj', '/C=US/ST=Arvados State/O=__ARVADOS__/OU=Arvados/CN=%s' % cn, 
     '-out', DOMAIN_REQ % name,
     '-keyout', DOMAIN_KEY % name,
     '-extensions', 'x509_ext',
@@ -86,26 +89,26 @@ for name, cn, _ in certificates:
 
 ## add hosts /etc/hosts
 if '{{cookiecutter.update_etc_hosts}}' == 'yes':
-  print("[ 2   ] Trying to update /etc/hosts...")
+  print(" [ 2   ] Trying to update /etc/hosts...")
   p_grep = subprocess.run(['grep','-q','{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}','/etc/hosts'], check=False)
   if p_grep.returncode == 1:
-    print("[ 2.1 ] entry for {{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}} in /etc/hosts is missing...")
+    print(" [ 2.1 ] entry for {{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}} in /etc/hosts is missing...")
     p_tee = subprocess.Popen('sudo tee --append /etc/hosts',
                         shell=True, stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE)
     ## dns_update is the record we'll use in /etc/hosts
     dns_update = '''
-# Arvados development cluster {{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}"
+# Arvados development cluster {{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}
 127.0.0.2 %s
 
 ''' % " ".join([x[1] for x in certificates if x[2]])
 
     p_tee.communicate(input=bytes(dns_update,'UTF-8'))
   else:
-    print("[ 2.2 ] entry for {{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}} in /etc/hosts there...")
+    print(" [ 2.2 ] entry for {{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}} in /etc/hosts there...")
 else:
-  print("[ 2.3 ] Skipping update /etc/hosts")
+  print(" [ 2.3 ] Skipping update /etc/hosts")
 
 
 print('''
