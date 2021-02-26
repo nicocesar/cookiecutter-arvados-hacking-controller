@@ -6,7 +6,10 @@
 	"_extensions":["jinja2.ext.debug"],
 	"default_configs_dir":"configs",
 	"update_etc_hosts": ["yes", "no"],
+	"ip_address":"127.0.0.2",
 	"filename_ca_cert": "arvados-ca.crt",
-	"filename_ca_key": "arvados-ca.key"
+	"filename_ca_key": "arvados-ca.key",
+	"username":"alice",
+	"password":"alice"
 }
 

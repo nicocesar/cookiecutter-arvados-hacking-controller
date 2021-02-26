@@ -100,7 +100,7 @@ if '{{cookiecutter.update_etc_hosts}}' == 'yes':
     ## dns_update is the record we'll use in /etc/hosts
     dns_update = '''
 # Arvados development cluster {{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}
-127.0.0.2 %s
+{{cookiecutter.ip_address}} %s
 
 ''' % " ".join([x[1] for x in certificates if x[2]])
 
@@ -112,6 +112,7 @@ else:
 
 
 print('''
+!!!! SUCCESS !!!!
 
 End of the installation. To test it out: 
 
@@ -121,4 +122,10 @@ DOCKER_BUILDKIT=1 code .
 And there will be a dialog "Folder containes Dev Container configuration file",
 click in "Reopen in container". Once the environment is up, press F5 to debug.
 
+Also you can try: 
+
+cd {{cookiecutter.cluster_uuid}}
+DOCKER_BUILDKIT=1 docker-compose up --build
+
+and visit https://{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:8443 in your browser
 ''')

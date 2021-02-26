@@ -113,8 +113,7 @@ services:
       POSTGRES_PASSWORD: postgres
     image: postgres:11-alpine
     ports:
-    - published: 5432
-      target: 5432
+      - 5432
     restart: always
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/postgresql:/docker-entrypoint-initdb.d:rw
@@ -194,16 +193,11 @@ services:
         - nginx-workbench2
         - nginx-ws
     ports:
-    - published: 8000
-      target: 8000
-    - published: 8002
-      target: 8002
-    - published: 8443
-      target: 8443
-    - published: 9002
-      target: 9002
-    - published: 25101
-      target: 25101
+      - "{{cookiecutter.ip_address}}:8000:8000"
+      - "{{cookiecutter.ip_address}}:8002:8002"
+      - "{{cookiecutter.ip_address}}:8443:8443"
+      - "{{cookiecutter.ip_address}}:9002:9002"
+      - "{{cookiecutter.ip_address}}:25101:25101"
     restart: always
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/nginx:/etc/nginx/conf.d:rw

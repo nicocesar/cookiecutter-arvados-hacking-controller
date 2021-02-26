@@ -12,9 +12,9 @@ Clusters:
         # should not be used in production.
         Enable: true
         Users:
-          alice:
-            Email: alice@{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}
-            Password: alice
+          {{cookiecutter.username}}:
+            Email: {{cookiecutter.username}}@{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}
+            Password: {{cookiecutter.password}}
       PAM:
         # (Experimental) Use PAM to authenticate users.
         Enable: false
