@@ -31,6 +31,18 @@ RUN --mount=type=cache,target=/root/.cache,id=root-cache \
     GOOS=linux \
     go install -a -installsuffix cgo ./$APP_DIR/$APP_NAME
 
+RUN --mount=type=cache,target=/root/.cache,id=root-cache \
+    --mount=type=cache,target=/go/pkg,id=go-cache-pkg \
+       go get github.com/uudashr/gopkgs/v2/cmd/gopkgs \
+	&& go get github.com/ramya-rao-a/go-outline \
+	&& go get github.com/cweill/gotests/... \
+	&& go get github.com/fatih/gomodifytags \
+	&& go get github.com/josharian/impl \
+	&& go get github.com/haya14busa/goplay/cmd/goplay \
+	&& go get github.com/go-delve/delve/cmd/dlv \
+	&& go get golang.org/x/lint/golint \
+	&& go get golang.org/x/tools/gopls
+
 #FINAL IMAGE
 FROM debian:buster-slim AS final
 

@@ -116,16 +116,18 @@ print('''
 
 End of the installation. To test it out: 
 
-cd {{cookiecutter.cluster_uuid}}
-DOCKER_BUILDKIT=1 code .
+  cd {{cookiecutter.cluster_uuid}}
+  DOCKER_BUILDKIT=1 code .
 
 And there will be a dialog "Folder containes Dev Container configuration file",
 click in "Reopen in container". Once the environment is up, press F5 to debug.
 
 Also you can try: 
 
-cd {{cookiecutter.cluster_uuid}}
-DOCKER_BUILDKIT=1 docker-compose up --build
+  cd {{cookiecutter.cluster_uuid}}
+  DOCKER_BUILDKIT=1 docker-compose up --build
 
 and visit https://{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}:8443 in your browser
+
+Happy hacking!
 ''')
