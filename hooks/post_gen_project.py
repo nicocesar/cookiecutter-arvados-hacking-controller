@@ -29,6 +29,9 @@ for root, dirs, files in os.walk(TARGET):
 ## clone arvados repo and check out the right branch
 subprocess.check_call('git clone {{cookiecutter.arvados_repo}} -b {{cookiecutter.arvados_branch}}'.split(' '))
 
+## clone arvados repo and check out the right branch
+subprocess.check_call('git clone {{cookiecutter.workbench2_repo}} -b {{cookiecutter.workbench2_branch}}'.split(' '))
+
 
 ## TODO: update configs/build/LAST_BUILD_INFO with git info from ./arvados
 ## TODO: generate certificates + CA ?

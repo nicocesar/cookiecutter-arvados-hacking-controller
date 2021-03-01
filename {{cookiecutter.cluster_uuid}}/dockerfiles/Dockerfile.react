@@ -1,0 +1,15 @@
+FROM node:10-alpine
+
+ENV PORT $PORT
+
+RUN apk add --no-cache python2 make g++
+WORKDIR /app 
+
+COPY arvados-workbench2/package.json .
+COPY arvados-workbench2/yarn.lock .
+RUN yarn install
+
+COPY arvados-workbench2/ ./
+
+EXPOSE ${PORT}
+CMD yarn run start --verbose

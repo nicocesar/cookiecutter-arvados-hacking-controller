@@ -3,6 +3,8 @@
 	"domain":"arv.local",
 	"arvados_repo":"git@git.arvados.org:arvados.git",
 	"arvados_branch":"17402-vscode-integration",
+	"workbench2_repo":"git@git.arvados.org:arvados-workbench2.git",
+	"workbench2_branch":"master",
 	"_extensions":["jinja2.ext.debug"],
 	"default_configs_dir":"configs",
 	"update_etc_hosts": ["yes", "no"],
