@@ -10,4 +10,9 @@ services:
     command: /bin/sh -c "while sleep 1000; do :; done"
     build:
       target: builder
+      cache_from: 
+        - nmarvie/controller_debug:latest
+    image: nmarvie/controller_debug:latest
+    volumes: ## This way is the less disruptive for people used to use arvbox
+    - $((INSTALL))/arvados:/usr/src/arvados/git.arvados.org/arvados.git:rw
 
