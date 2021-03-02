@@ -75,6 +75,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-apt \
                     ruby-dev \
                     shellinabox \
                     util-linux \
+                    vim \
                     zlib1g-dev \
  # && ln -s /usr/bin/ruby2.7 /usr/local/bin/ruby \
  # && ln -s /usr/lib/x86_64-linux-gnu/libruby-2.5.so.2.5.5 /usr/local/lib/libruby.so.2.5 \

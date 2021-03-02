@@ -46,17 +46,6 @@ services:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-api-database.yml:/etc/arvados/database.yml:rw
     - $((INSTALL))/scripts:/scripts:rw
     - $((INSTALL))/arvados:/usr/src/arvados:rw
-  compute:
-    build:
-      args:
-        BUILD_TAG: latest
-        COMPUTE_IMAGE: debian:buster-slim
-        BUILDKIT_INLINE_CACHE: 1
-      context: .
-      dockerfile: $((INSTALL))/dockerfiles/Dockerfile.compute
-    image: nmarvie/compute:latest
-    container_name: {{cookiecutter.cluster_uuid}}_compute
-    hostname: compute
   controller:
     build:
       args:
@@ -145,10 +134,11 @@ services:
     - keep0_data:/var/lib/arvados/keep0:rw
   keep1:
     container_name: {{cookiecutter.cluster_uuid}}_keep1
+    hostname: keep1
     image: nmarvie/keepstore:latest
     volumes:
     - $((INSTALL))/{{cookiecutter.default_configs_dir}}/arvados/arvados-config.yml:/etc/arvados/config.yml:rw
-    - keep0_data:/var/lib/arvados/keep0:rw
+    - keep1_data:/var/lib/arvados/keep1:rw
   keepproxy:
     build:
       args:
@@ -226,9 +216,9 @@ services:
     - cache_gem:/cache/gem:rw
     - cache_npm:/cache/npm:rw
     - $((INSTALL))/scripts:/scripts:rw
-    - $((INSTALL))/{{cookiecutter.default_configs_dir}}/ssl/{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}-CA.crt:/usr/local/share/ca-certificates/{{cookiecutter.cluster_uuid}}.{{cookiecutter.domain}}-CA.crt:ro
     - $((INSTALL))/arvados:/usr/src/arvados:rw
     - /tmp/docker-shell:/var/lib/docker:rw
+    - $((INSTALL))/../{{cookiecutter.filename_ca_cert}}:/etc/arvados/ca-certificates.crt:ro
   websocket:
     build:
       args:

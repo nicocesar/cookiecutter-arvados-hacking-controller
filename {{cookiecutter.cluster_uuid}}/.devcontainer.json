@@ -4,11 +4,11 @@
 		"docker-compose.yml",
 		"docker-compose.debug-controller.yml"
 		],
-	"service": "controller",
-	"extensions": [
-		"golang.go"
-	],
+    "service": "controller",
+    "extensions": ["golang.go"],
     "workspaceFolder": "/usr/src/arvados/git.arvados.org/arvados.git",
-    "shutdownAction": "stopCompose",
-	
+    "shutdownActiono": "stopCompose",
+    "settings": {
+	    "remote.autoForwardPorts": false
+    }
 }
