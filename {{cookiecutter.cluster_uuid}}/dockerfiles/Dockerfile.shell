@@ -29,11 +29,6 @@ ENV NPM_CONFIG_PREFIX ${NPM_CONFIG_PREFIX}
 ENV npm_config_cache_min ${NPM_CACHE_MIN}
 # ENV R_LIBS /var/lib/Rlibs
 
-# Avoid unnecessary files when installing packages
-COPY configs/build/dpkg-nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
-COPY configs/build/apt-no-recommends /etc/apt/apt.conf.d/99synaptic
-COPY configs/build/gemrc /root/.gemrc
-
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-apt \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=lib-apt \
     apt-get update \
@@ -94,16 +89,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-apt \
                     postgresql-client \
                     python-dev \
                     ruby-dev \
-                    zlib1g-dev \
- && apt-get autoremove --purge --yes \
- && rm -rf /lib/systemd/system/systemd*udev* \
-           /lib/systemd/system/getty.target \
- && (find / ! -path "/{proc,sys,dev}" -name "*.pyc"; \
-     find / ! -path "/{proc,sys,dev}" -name "__pycache__"; \
-     find /var/log -type f) | \
-    grep -v ^/proc | xargs rm -rf \
-    # Also obscure any `getty` binaries https://github.com/moby/moby/issues/4040#issuecomment-339022455
- && cp /bin/true /sbin/agetty
+                    zlib1g-dev 
+
 COPY --from=docker:latest /usr/local/bin/dockerd /usr/local/bin/dockerd
 COPY --from=docker:latest /usr/local/bin/docker /usr/local/bin/docker
 COPY --from=docker:latest /usr/local/bin/runc /usr/local/bin/runc
@@ -111,4 +98,9 @@ COPY --from=docker:latest /usr/local/bin/containerd /usr/local/bin/containerd
 COPY --from=docker:latest /usr/local/bin/containerd-shim /usr/local/bin/containerd-shim
 COPY --from=docker:latest /usr/local/bin/containerd-shim-runc-v2 /usr/local/bin/containerd-shim-runc-v2
 COPY configs/build/LAST_BUILD_INFO /BUILD_INFO
+
+# Ruby CLI tools need CA 
+COPY {{cookiecutter.filename_ca_cert}} /etc/ssl/certs 
+RUN c_rehash
+
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

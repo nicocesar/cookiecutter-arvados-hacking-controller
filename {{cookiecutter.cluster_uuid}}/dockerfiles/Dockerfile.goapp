@@ -31,6 +31,7 @@ RUN --mount=type=cache,target=/root/.cache,id=root-cache \
     GOOS=linux \
     go install -a -installsuffix cgo ./$APP_DIR/$APP_NAME
 
+## This are development tools that we install when we use "target:" in docker
 RUN --mount=type=cache,target=/root/.cache,id=root-cache \
     --mount=type=cache,target=/go/pkg,id=go-cache-pkg \
        go get github.com/uudashr/gopkgs/v2/cmd/gopkgs \
@@ -47,9 +48,6 @@ RUN --mount=type=cache,target=/root/.cache,id=root-cache \
 FROM debian:buster-slim AS final
 
 ARG APP_NAME
-# Avoid unnecessary files when installing packages
-COPY configs/build/dpkg-nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
-COPY configs/build/apt-no-recommends /etc/apt/apt.conf.d/99synaptic
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-apt \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=lib-apt \

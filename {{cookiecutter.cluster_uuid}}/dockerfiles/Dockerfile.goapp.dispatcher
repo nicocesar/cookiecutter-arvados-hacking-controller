@@ -38,6 +38,19 @@ RUN --mount=type=cache,target=/root/.cache,id=root-cache \
     GOOS=linux \
     go install -a -installsuffix cgo ./$APP_DIR/$APP_NAME
 
+## This are development tools that we install when we use "target:" in docker
+RUN --mount=type=cache,target=/root/.cache,id=root-cache \
+    --mount=type=cache,target=/go/pkg,id=go-cache-pkg \
+       go get github.com/uudashr/gopkgs/v2/cmd/gopkgs \
+	&& go get github.com/ramya-rao-a/go-outline \
+	&& go get github.com/cweill/gotests/... \
+	&& go get github.com/fatih/gomodifytags \
+	&& go get github.com/josharian/impl \
+	&& go get github.com/haya14busa/goplay/cmd/goplay \
+	&& go get github.com/go-delve/delve/cmd/dlv \
+	&& go get golang.org/x/lint/golint \
+	&& go get golang.org/x/tools/gopls
+
 #FINAL IMAGE
 FROM ${COMPUTE_IMAGE} AS final
 
@@ -47,10 +60,6 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV ARVADOS_API_HOST ${ARVADOS_API_HOST}
 ENV ARVADOS_API_TOKEN ${ARVADOS_API_TOKEN}
 ENV ARVADOS_API_HOST_INSECURE true
-
-# Avoid unnecessary files when installing packages
-COPY configs/build/dpkg-nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
-COPY configs/build/apt-no-recommends /etc/apt/apt.conf.d/99synaptic
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-apt \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=lib-apt \
@@ -90,6 +99,5 @@ COPY --from=builder /go/bin/$APP_NAME /usr/bin/crunch-run
 COPY --from=builder /go/bin/$APP_NAME /usr/local/bin/crunch-dispatch-local
 
 COPY configs/build/crunch-run.sh /usr/local/bin/crunch-run.sh
-COPY configs/build/LAST_BUILD_INFO /BUILD_INFO
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

@@ -90,6 +90,9 @@ for name, cn, _ in certificates:
     '-set_serial', str(random.randrange(1, 99999999))]  ,
     stderr=subprocess.STDOUT) 
 
+## Some Dockerfiles might need the CA to later run r_hasher from openssl
+subprocess.check_call(['cp', CA_CRT, '.'])
+
 ## add hosts /etc/hosts
 if '{{cookiecutter.update_etc_hosts}}' == 'yes':
   print(" [ 2   ] Trying to update /etc/hosts...")

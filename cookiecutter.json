@@ -12,6 +12,7 @@
 	"filename_ca_cert": "arvados-ca.crt",
 	"filename_ca_key": "arvados-ca.key",
 	"username":"alice",
-	"password":"alice"
+	"password":"alice",
+	"primary_service_to_debug":["controller","dispatcher"]
 }
 
